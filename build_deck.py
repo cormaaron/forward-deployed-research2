@@ -533,6 +533,168 @@ takeaway(
 
 footer(s, 4)
 
+# ================================================================ Backup divider
+s = prs.slides.add_slide(BLANK)
+add_text(s, MARGIN, Inches(3.15), CONTENT_W, Inches(0.5),
+         "Backup", size=24, color=BLACK, bold=True)
+add_line(s, MARGIN, Inches(3.72), Inches(2.2), color=BLACK, weight=1.5)
+add_text(s, MARGIN, Inches(3.88), CONTENT_W, Inches(0.35),
+         "One-pager per exemplar: model, motivation, differentiation and impact",
+         size=12, color=GREY)
+footer(s, 5)
+
+# ================================================================ Backup one-pagers
+QUESTION_HEADS = (
+    "What the model looks like",
+    "Why they moved to it",
+    "What sets it apart",
+    "Impact to date",
+)
+
+EXEMPLARS = [
+    ("Palantir",
+     "Palantir created the forward-deployed model and built its commercial "
+     "engine around it",
+     [
+         ["FDEs deploy on-site within customer operations",
+          "Two roles: domain-facing specialists and product-focused engineers",
+          "Build directly on Foundry and AIP against live customer data",
+          "Multi-week bootcamps deliver working software before contracts scale"],
+         ["Government and industrial clients could not specify requirements upfront",
+          "Complex, sensitive data environments demanded on-site iteration",
+          "Conventional software sales failed to demonstrate value in these settings"],
+         ["FDE is the core commercial motion, not a services add-on",
+          "Field learnings flow directly into the product roadmap",
+          "Engineers ship product code — not consulting deliverables"],
+         ["Credits FDE-led AIP bootcamps for accelerating US commercial growth "
+          "on earnings calls",
+          "Sustained expansion within existing accounts publicly highlighted",
+          "Model now widely emulated across the industry"],
+     ],
+     "Source: Palantir earnings calls, S-1 and public statements"),
+
+    ("Uber",
+     "Uber's embedded ops–engineering pairing powered city-by-city scaling "
+     "and is now a product it sells",
+     [
+         ["Engineers embedded with city operations teams through the scaling era",
+          "City teams owned the P&L; engineers tuned marketplace levers locally",
+          "Model now offered externally to enterprises via Uber AI Solutions"],
+         ["Every city market behaved differently; central roadmaps were too slow",
+          "Launch speed was existential in winner-take-most markets",
+          "Operational data lived in the field, not at headquarters"],
+         ["Ops-led and engineer-supported — the business owned the outcome",
+          "City learnings codified into playbooks and reused globally",
+          "Matured from internal practice into an external commercial offering"],
+         ["Embedded pairing publicly cited as central to rapid multi-market "
+          "expansion",
+          "Enabled local marketplace tuning at global scale",
+          "Basis for the Uber AI Solutions business line"],
+     ],
+     "Source: Uber public statements, engineering blog and press coverage"),
+
+    ("OpenAI",
+     "OpenAI built a forward-deployed function to turn frontier models into "
+     "deployed enterprise systems",
+     [
+         ["FDE pods embed within enterprise customer accounts",
+          "Build production agent and workflow deployments on OpenAI models",
+          "Scope spans integration, evaluation and adoption support"],
+         ["Model capability outpaced enterprise ability to absorb it",
+          "API access alone did not convert into production use cases",
+          "Competition for enterprise adoption intensified"],
+         ["Proximity to frontier research within customer engagements",
+          "Field signal shapes model and product priorities",
+          "Deployment patterns feed reusable product features"],
+         ["Positions FDEs as core to enterprise adoption",
+          "Enterprise agent deployments built with embedded teams publicly "
+          "showcased"],
+     ],
+     "Source: OpenAI public statements, hiring posts and press coverage"),
+
+    ("ElevenLabs",
+     "ElevenLabs uses forward-deployed engineers to compress time-to-production "
+     "for enterprise voice agents",
+     [
+         ["FDEs co-build production voice agents with customer engineering teams",
+          "Engagements run end-to-end: design, integration, evaluation, launch"],
+         ["Voice agents demand domain-specific tuning customers could not do alone",
+          "Enterprise buyers required proof in production, not demonstrations"],
+         ["Deep voice and audio specialization applied inside customer stacks",
+          "Embedded talent lets a small company deliver enterprise-grade "
+          "deployments"],
+         ["Attributes enterprise expansion to its deployment-led model",
+          "FDE hiring scaled publicly alongside enterprise growth"],
+     ],
+     "Source: ElevenLabs public statements, job postings and press coverage"),
+
+    ("Stripe",
+     "Stripe's user-proximate engineering culture is a long-standing form of "
+     "forward deployment",
+     [
+         ["Engineers work directly with users — a founding practice",
+          "Solution engineers embedded in key enterprise accounts",
+          "Direct user contact expected of product engineers"],
+         ["A developer-first product required first-hand user understanding",
+          "Enterprise payments complexity could not be specified remotely"],
+         ["Cultural rather than organizational — proximity is the default",
+          "API design shaped by continuous developer feedback"],
+         ["User-proximate engineering credited for product velocity and "
+          "enterprise wins",
+          "Developer experience widely treated as the industry benchmark"],
+     ],
+     "Source: Stripe public statements, founder interviews and press coverage"),
+
+    ("Brex",
+     "Brex points its forward-deployed engineers inward, rebuilding its own "
+     "operations around AI",
+     [
+         ["AI engineers embedded within internal business teams",
+          "Core workflows redesigned around AI-native tooling",
+          "Adoption managed as an explicit leadership mandate"],
+         ["Fintech margin pressure demanded step-change productivity",
+          "Leadership prioritized internal AI adoption ahead of external "
+          "products"],
+         ["Internal-first: its own operations serve as the proving ground",
+          "Embedded engineers accountable for adoption, not just delivery"],
+         ["Leadership reports company-wide daily AI usage",
+          "Workflow redesign publicly discussed as a productivity driver"],
+     ],
+     "Source: Brex leadership statements and press coverage"),
+
+    ("Plaid",
+     "Plaid deploys engineers into customer integration teams to make "
+     "integrations faster and stickier",
+     [
+         ["FDEs work alongside customer engineers during onboarding and "
+          "expansion",
+          "Hands-on integration work against customer systems"],
+         ["Integration timelines gated revenue for Plaid and its customers",
+          "Bank and fintech data complexity exceeded documentation-led support"],
+         ["Deep bank and fintech data expertise applied in customer codebases",
+          "Embedded position surfaces product gaps early"],
+         ["Publicly cites materially faster enterprise integrations",
+          "Deeper, harder-to-displace customer relationships"],
+     ],
+     "Source: Plaid public statements, job postings and press coverage"),
+]
+
+BK_COL_W = Inches(2.87)
+BK_GAP = Inches(0.25)
+for page, (name, narrative, columns, source) in enumerate(EXEMPLARS, start=6):
+    s = prs.slides.add_slide(BLANK)
+    header(s, narrative,
+           "Backup: " + name + " — model, motivation, differentiation and impact")
+    for i, (head, items) in enumerate(zip(QUESTION_HEADS, columns)):
+        x = MARGIN + i * (BK_COL_W + BK_GAP)
+        add_text(s, x, Inches(1.92), BK_COL_W, Inches(0.28), head,
+                 size=10.5, color=BLACK, bold=True)
+        add_line(s, x, Inches(2.24), BK_COL_W, color=BLACK, weight=1.0)
+        paras = [[("•  ", {}), (t, {})] for t in items]
+        add_text(s, x, Inches(2.44), BK_COL_W, Inches(4.4), paras,
+                 size=10.5, color=BLACK, line_spacing=1.2, space_after=16)
+    footer(s, page, source)
+
 OUT = "Forward-Deployed-Engineering_Executive-Deck.pptx"
 prs.save(OUT)
 print("saved", OUT)
