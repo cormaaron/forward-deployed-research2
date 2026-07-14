@@ -1,24 +1,28 @@
 #!/usr/bin/env python3
-"""Builds the forward-deployed engineering executive deck (.pptx)."""
+"""Builds the forward-deployed engineering executive deck (.pptx).
 
-import copy
+Design rules:
+- Black and white only (black text, greys for secondary text and fills).
+- Title = narrative (18pt bold), black rule, subtitle = objective
+  description of the slide (16pt bold).
+- Body organized in two halves with sentence-case headers.
+- Plain text bullets/numbered lists; shapes only for diagrams and tables.
+- No all caps, normal spacing.
+"""
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.oxml.ns import qn
-from pptx.util import Emu, Inches, Pt
+from pptx.util import Inches, Pt
 
 # ---------------------------------------------------------------- palette
-NAVY = RGBColor(0x10, 0x2A, 0x43)
-BLUE = RGBColor(0x2E, 0x74, 0xB5)
-LIGHT_BLUE = RGBColor(0xE9, 0xF1, 0xF8)
-INK = RGBColor(0x33, 0x38, 0x3D)
-GREY = RGBColor(0x63, 0x6A, 0x71)
-MID_GREY = RGBColor(0x9A, 0xA0, 0xA6)
-HAIRLINE = RGBColor(0xC9, 0xCE, 0xD3)
-CARD = RGBColor(0xF4, 0xF6, 0xF8)
+BLACK = RGBColor(0x00, 0x00, 0x00)
+GREY = RGBColor(0x59, 0x59, 0x59)
+MID_GREY = RGBColor(0x8C, 0x8C, 0x8C)
+HAIRLINE = RGBColor(0xBF, 0xBF, 0xBF)
+LIGHT = RGBColor(0xF2, 0xF2, 0xF2)
 WHITE = RGBColor(0xFF, 0xFF, 0xFF)
 
 FONT = "Arial"
@@ -35,16 +39,15 @@ BLANK = prs.slide_layouts[6]
 
 
 # ---------------------------------------------------------------- helpers
-def _style_run(run, size, color, bold=False, italic=False):
+def _style_run(run, size, color, bold=False):
     f = run.font
     f.name = FONT
     f.size = Pt(size)
     f.color.rgb = color
     f.bold = bold
-    f.italic = italic
 
 
-def add_text(slide, x, y, w, h, runs, size=10, color=INK, bold=False,
+def add_text(slide, x, y, w, h, runs, size=10, color=BLACK, bold=False,
              align=PP_ALIGN.LEFT, anchor=MSO_ANCHOR.TOP, space_after=0,
              line_spacing=1.0, wrap=True):
     """runs: str, or list of paragraphs; each paragraph is a list of
@@ -67,7 +70,7 @@ def add_text(slide, x, y, w, h, runs, size=10, color=INK, bold=False,
             r = p.add_run()
             r.text = text
             _style_run(r, ov.get("size", size), ov.get("color", color),
-                       ov.get("bold", bold), ov.get("italic", False))
+                       ov.get("bold", bold))
     return box
 
 
@@ -124,16 +127,15 @@ def add_line(slide, x, y, w, color=HAIRLINE, weight=0.75):
     return ln
 
 
-def header(slide, title, subtitle=None):
-    add_text(slide, MARGIN, Inches(0.34), CONTENT_W, Inches(0.9),
-             title, size=20, color=NAVY, bold=True, line_spacing=1.05)
-    y = Inches(1.22)
-    if subtitle:
-        add_text(slide, MARGIN, Inches(1.06), CONTENT_W, Inches(0.5),
-                 subtitle, size=11, color=GREY, line_spacing=1.15)
-        y = Inches(1.56)
-    add_line(slide, MARGIN, y, CONTENT_W, color=NAVY, weight=1.4)
-    return y
+def header(slide, title, subtitle):
+    """Narrative title (18pt bold), black rule, objective subtitle
+    (16pt bold). Returns the y where body content may start."""
+    add_text(slide, MARGIN, Inches(0.32), CONTENT_W, Inches(0.75),
+             title, size=18, color=BLACK, bold=True, line_spacing=1.05)
+    add_line(slide, MARGIN, Inches(0.98), CONTENT_W, color=BLACK, weight=1.5)
+    add_text(slide, MARGIN, Inches(1.1), CONTENT_W, Inches(0.35),
+             subtitle, size=16, color=BLACK, bold=True, line_spacing=1.05)
+    return Inches(1.62)
 
 
 def footer(slide, page_no, source=None):
@@ -146,28 +148,33 @@ def footer(slide, page_no, source=None):
 
 
 def section_head(slide, x, y, w, text):
-    add_text(slide, x, y, w, Inches(0.3), text.upper(),
-             size=10.5, color=NAVY, bold=True)
-    add_line(slide, x, y + Inches(0.28), Inches(0.42), color=BLUE, weight=2.25)
+    add_text(slide, x, y, w, Inches(0.28), text,
+             size=11, color=BLACK, bold=True)
 
 
-def takeaway_box(slide, x, y, w, h, lead, body, body_size=9.5):
-    add_rect(slide, x, y, w, h, fill=LIGHT_BLUE)
-    add_rect(slide, x, y, Inches(0.045), h, fill=NAVY)
+def bullets(slide, x, y, w, items, size=10, color=BLACK, space_after=6,
+            line_spacing=1.1, marker="•  "):
+    """Plain text bullet list in a single text box."""
+    paras = [[(marker, {"color": color}), (t, {})] for t in items]
+    return add_text(slide, x, y, w, Inches(0.3 * len(items) + 0.3), paras,
+                    size=size, color=color, space_after=space_after,
+                    line_spacing=line_spacing)
+
+
+def takeaway(slide, x, y, w, h, lead, body, body_size=10):
+    box = add_rect(slide, x, y, w, h, fill=LIGHT)
+    add_rect(slide, x, y, Inches(0.04), h, fill=BLACK)
     add_text(slide, x + Inches(0.2), y, w - Inches(0.4), h,
-             [[(lead + "  ", {"bold": True, "color": NAVY}),
-               (body, {"color": INK})]],
-             size=body_size, anchor=MSO_ANCHOR.MIDDLE, line_spacing=1.12)
+             [[(lead + "  ", {"bold": True}), (body, {})]],
+             size=body_size, color=BLACK, anchor=MSO_ANCHOR.MIDDLE,
+             line_spacing=1.12)
+    return box
 
 
-def set_cell(cell, runs, size=8.5, color=INK, bold=False,
-             align=PP_ALIGN.LEFT, fill=None):
-    if fill is not None:
-        cell.fill.solid()
-        cell.fill.fore_color.rgb = fill
-    else:
-        cell.fill.solid()
-        cell.fill.fore_color.rgb = WHITE
+def set_cell(cell, runs, size=8.5, color=BLACK, bold=False,
+             align=PP_ALIGN.LEFT, fill=WHITE):
+    cell.fill.solid()
+    cell.fill.fore_color.rgb = fill
     cell.margin_left = Inches(0.08)
     cell.margin_right = Inches(0.08)
     cell.margin_top = Inches(0.045)
@@ -202,62 +209,40 @@ def plain_table_style(table):
     tbl_pr.append(style_el)
 
 
-def cell_bottom_border(cell, color=HAIRLINE, weight=0.5):
-    tc_pr = cell._tc.get_or_add_tcPr()
-    for tag in ("a:lnB",):
-        for el in tc_pr.findall(qn(tag)):
-            tc_pr.remove(el)
-    ln = tc_pr.makeelement(qn("a:lnB"), {
-        "w": str(Emu(Pt(weight)).emu if hasattr(Emu(0), 'emu') else int(Pt(weight))),
-        "cap": "flat"})
-    ln.set("w", str(int(Pt(weight))))
-    fill = tc_pr.makeelement(qn("a:solidFill"), {})
-    clr = tc_pr.makeelement(qn("a:srgbClr"), {"val": "%02X%02X%02X" % (color[0], color[1], color[2])})
-    fill.append(clr)
-    ln.append(fill)
-    tc_pr.append(ln)
-
-
-def bullet(slide, x, y, w, text, size=10.5, color=INK, gap=0.115):
-    add_rect(slide, x, y + Inches(0.055), Inches(0.075), Inches(0.075), fill=BLUE)
-    add_text(slide, x + Inches(0.2), y, w - Inches(0.2), Inches(0.4),
-             text, size=size, color=color, line_spacing=1.1)
-
-
-# ================================================================ SLIDE 1
+# ================================================================ Slide 1
 s = prs.slides.add_slide(BLANK)
 header(
     s,
     "Forward-deployed engineering is emerging as the leading operating model "
     "for scaling enterprise AI",
-    "Leading AI-native organizations are embedding engineers directly within "
-    "business teams to accelerate workflow automation, increase adoption and "
-    "continuously improve enterprise platforms.")
+    "Model differentiators and publicly reported evidence from seven "
+    "leading organizations")
 
 LX, LW = MARGIN, Inches(4.35)
 RX, RW = Inches(5.3), Inches(7.48)
 
-section_head(s, LX, Inches(1.78), LW, "What differentiates the model")
+section_head(s, LX, Inches(1.84), LW, "What differentiates the model")
 
 diff_points = [
-    ("Embedded in the business", "Engineers sit inside business teams, not central IT"),
-    ("Problem-led, not spec-led", "Work starts from operational problems, not requirements"),
-    ("Rapid iteration", "Solutions iterated live with users in days, not quarters"),
-    ("Productization", "Proven solutions become reusable platform capabilities"),
+    ("Embedded in the business",
+     "Engineers sit inside business teams, not central IT"),
+    ("Problem-led, not spec-led",
+     "Work starts from operational problems, not requirements"),
+    ("Rapid iteration",
+     "Solutions iterated live with users in days, not quarters"),
+    ("Productization",
+     "Proven solutions become reusable platform capabilities"),
 ]
-py = Inches(2.3)
+py = Inches(2.32)
 for i, (lead, body) in enumerate(diff_points):
-    add_text(s, LX, py, Inches(0.5), Inches(0.4), "0%d" % (i + 1),
-             size=15, color=BLUE, bold=True)
-    add_text(s, LX + Inches(0.52), py - Inches(0.01), LW - Inches(0.52), Inches(0.6),
-             [[(lead, {"bold": True, "color": NAVY})],
-              [(body, {"color": GREY, "size": 9.5})]],
-             size=10.5, line_spacing=1.12)
-    if i < 3:
-        add_line(s, LX, py + Inches(0.72), LW, color=HAIRLINE, weight=0.5)
-    py += Inches(0.92)
+    add_text(s, LX, py, LW, Inches(0.7),
+             [[("%d.  " % (i + 1), {"bold": True}),
+               (lead, {"bold": True})],
+              [("     " + body, {"color": GREY, "size": 9.5})]],
+             size=10.5, color=BLACK, line_spacing=1.15, space_after=2)
+    py += Inches(0.82)
 
-section_head(s, RX, Inches(1.78), RW, "Evidence from leading organizations")
+section_head(s, RX, Inches(1.84), RW, "Evidence from leading organizations")
 
 rows = [
     ("Palantir",
@@ -283,8 +268,8 @@ rows = [
      "Publicly cites materially faster enterprise integrations"),
 ]
 
-tbl_y = Inches(2.24)
-tbl_h = Inches(3.72)
+tbl_y = Inches(2.28)
+tbl_h = Inches(3.66)
 gframe = s.shapes.add_table(len(rows) + 1, 3, RX, tbl_y, RW, tbl_h)
 table = gframe.table
 plain_table_style(table)
@@ -293,36 +278,37 @@ table.columns[1].width = Inches(3.1)
 table.columns[2].width = Inches(3.3)
 table.rows[0].height = Inches(0.3)
 for i in range(1, len(rows) + 1):
-    table.rows[i].height = Inches(0.487)
+    table.rows[i].height = Inches(0.48)
 
 for c, label in enumerate(("Company", "Operating model", "Publicly reported outcomes")):
-    set_cell(table.cell(0, c), label, size=9, color=WHITE, bold=True, fill=NAVY)
+    set_cell(table.cell(0, c), label, size=9, color=WHITE, bold=True, fill=BLACK)
 for r, (name, model, outcome) in enumerate(rows, start=1):
-    fill = WHITE if r % 2 else CARD
-    set_cell(table.cell(r, 0), name, size=8.5, color=NAVY, bold=True, fill=fill)
-    set_cell(table.cell(r, 1), model, size=8, color=INK, fill=fill)
+    fill = WHITE if r % 2 else LIGHT
+    set_cell(table.cell(r, 0), name, size=8.5, bold=True, fill=fill)
+    set_cell(table.cell(r, 1), model, size=8, fill=fill)
     set_cell(table.cell(r, 2), outcome, size=8, color=GREY, fill=fill)
 
-takeaway_box(
-    s, RX, Inches(6.14), RW, Inches(0.76),
+takeaway(
+    s, RX, Inches(6.12), RW, Inches(0.76),
     "Common pattern:",
     "every organization positions engineers at the point of value creation "
     "and relies on a platform team to convert local wins into reusable "
-    "enterprise assets.")
+    "enterprise assets.", body_size=9.5)
 
 footer(s, 1, "Source: Company earnings calls, engineering blogs and public statements. Outcomes as publicly reported; not independently verified.")
 
-# ================================================================ SLIDE 2
+# ================================================================ Slide 2
 s = prs.slides.add_slide(BLANK)
 header(
     s,
     "Leading organizations consistently deploy the same operating model "
-    "despite differences in industry")
+    "despite differences in industry",
+    "Six shared design principles and how each organization applies them")
 
 LX, LW = MARGIN, Inches(4.5)
 RX = Inches(5.45)
 
-section_head(s, LX, Inches(1.42), LW, "Common design principles")
+section_head(s, LX, Inches(1.84), LW, "Common design principles")
 principles = [
     "Embed engineers alongside business operators",
     "Observe workflows first-hand before building",
@@ -331,19 +317,14 @@ principles = [
     "Productize successful solutions",
     "Continuously strengthen the enterprise platform",
 ]
-cy = Inches(1.94)
+py = Inches(2.32)
 for i, ptext in enumerate(principles):
-    card = add_rect(s, LX, cy, LW, Inches(0.66), fill=CARD)
-    add_rect(s, LX, cy, Inches(0.04), Inches(0.66), fill=BLUE)
-    add_text(s, LX + Inches(0.18), cy, Inches(0.5), Inches(0.66),
-             str(i + 1), size=17, color=NAVY, bold=True,
-             anchor=MSO_ANCHOR.MIDDLE)
-    add_text(s, LX + Inches(0.68), cy, LW - Inches(0.85), Inches(0.66),
-             ptext, size=10, color=INK, anchor=MSO_ANCHOR.MIDDLE,
-             line_spacing=1.1)
-    cy += Inches(0.79)
+    add_text(s, LX, py, LW, Inches(0.45),
+             [[("%d.  " % (i + 1), {"bold": True}), (ptext, {})]],
+             size=10.5, color=BLACK, line_spacing=1.15)
+    py += Inches(0.62)
 
-section_head(s, RX, Inches(1.42), Inches(7.3), "How each organization applies it")
+section_head(s, RX, Inches(1.84), Inches(7.3), "How each organization applies it")
 
 companies = [
     ("Palantir",
@@ -376,133 +357,122 @@ companies = [
      "Faster, stickier integrations"),
 ]
 
-CW, CH = Inches(3.63), Inches(1.12)
-GX, GY = Inches(0.17), Inches(0.115)
+CW = Inches(3.63)
+CH = Inches(1.14)
+GX = Inches(0.17)
 labels = ("Model", "Edge", "Goal")
 for i, (name, model, edge, goal) in enumerate(companies):
     col, row = i % 2, i // 2
     x = RX + col * (CW + GX)
-    y = Inches(1.94) + row * (CH + GY)
-    add_rect(s, x, y, CW, CH, fill=WHITE, line=HAIRLINE, line_w=0.75)
-    add_rect(s, x, y, CW, Inches(0.02), fill=NAVY)
-    add_text(s, x + Inches(0.14), y + Inches(0.08), CW - Inches(0.28), Inches(0.22),
-             name, size=9.5, color=NAVY, bold=True)
+    y = Inches(2.32) + row * CH
+    add_line(s, x, y, CW, color=HAIRLINE, weight=0.5)
+    add_text(s, x, y + Inches(0.08), CW, Inches(0.22),
+             name, size=9.5, color=BLACK, bold=True)
     paras = []
     for label, val in zip(labels, (model, edge, goal)):
         paras.append([(label + "   ", {"bold": True, "color": MID_GREY, "size": 7}),
-                      (val, {"color": INK})])
-    add_text(s, x + Inches(0.14), y + Inches(0.33), CW - Inches(0.28), Inches(0.75),
-             paras, size=8, line_spacing=1.0, space_after=3)
+                      (val, {})])
+    add_text(s, x, y + Inches(0.32), CW, Inches(0.75),
+             paras, size=8, color=BLACK, line_spacing=1.0, space_after=3)
 
-# eighth grid slot: mini takeaway
+# eighth grid slot: takeaway
 x = RX + 1 * (CW + GX)
-y = Inches(1.94) + 3 * (CH + GY)
-takeaway_box(s, x, y, CW, CH,
-             "Same blueprint:",
-             "proximity to operations, speed of iteration and platform "
-             "leverage — applied to different industries.",
-             body_size=8.5)
+y = Inches(2.32) + 3 * CH
+takeaway(s, x, y + Inches(0.06), CW, CH - Inches(0.12),
+         "Same blueprint:",
+         "proximity to operations, speed of iteration and platform "
+         "leverage — applied to different industries.", body_size=8.5)
 
 footer(s, 2, "Source: Company engineering blogs, job postings and public statements")
 
-# ================================================================ SLIDE 3
+# ================================================================ Slide 3
 s = prs.slides.add_slide(BLANK)
 header(
     s,
     "Forward-deployed engineering fundamentally changes how technology "
-    "organizations create value")
+    "organizations create value",
+    "Comparison of the traditional and forward-deployed delivery models")
 
 PL_X, PL_W = MARGIN, Inches(5.85)
 PR_X, PR_W = Inches(6.93), Inches(5.85)
-PANEL_Y = Inches(1.42)
 
-# panel headers
-h1 = add_rect(s, PL_X, PANEL_Y, PL_W, Inches(0.34), fill=CARD)
-shape_text(h1, "TRADITIONAL OPERATING MODEL", size=10, color=GREY, bold=True)
-h2 = add_rect(s, PR_X, PANEL_Y, PR_W, Inches(0.34), fill=NAVY)
-shape_text(h2, "FORWARD-DEPLOYED MODEL", size=10, color=WHITE, bold=True)
+section_head(s, PL_X, Inches(1.84), PL_W, "Traditional operating model")
+section_head(s, PR_X, Inches(1.84), PR_W, "Forward-deployed model")
 
 # left: sequential flow
 steps = ["Business", "Requirements", "Engineering", "Testing", "Deployment", "Business"]
-BW, BH = Inches(2.5), Inches(0.31)
+BW, BH = Inches(2.5), Inches(0.3)
 bx = PL_X + (PL_W - BW) / 2
-by = Inches(1.98)
+by = Inches(2.26)
 for i, step in enumerate(steps):
-    box = add_rect(s, bx, by, BW, BH, fill=WHITE, line=MID_GREY, line_w=0.75)
-    shape_text(box, step, size=9.5, color=GREY)
+    box = add_rect(s, bx, by, BW, BH, fill=WHITE, line=BLACK, line_w=0.75)
+    shape_text(box, step, size=9.5, color=BLACK)
     if i < len(steps) - 1:
-        ar = add_rect(s, PL_X + PL_W / 2 - Inches(0.05), by + BH + Inches(0.025),
-                      Inches(0.1), Inches(0.1), fill=MID_GREY,
-                      shape=MSO_SHAPE.DOWN_ARROW)
-    by += BH + Inches(0.15)
+        add_rect(s, PL_X + PL_W / 2 - Inches(0.05), by + BH + Inches(0.02),
+                 Inches(0.1), Inches(0.1), fill=GREY,
+                 shape=MSO_SHAPE.DOWN_ARROW)
+    by += BH + Inches(0.14)
 
-wy = Inches(4.95)
-add_text(s, PL_X, wy, PL_W, Inches(0.25), "STRUCTURAL WEAKNESSES",
-         size=9, color=GREY, bold=True)
-weaknesses = [
+wy = Inches(5.0)
+add_text(s, PL_X, wy, PL_W, Inches(0.25), "Structural weaknesses",
+         size=10, color=BLACK, bold=True)
+bullets(s, PL_X, wy + Inches(0.3), PL_W, [
     "Intent degrades at every handoff",
     "Feedback arrives only after deployment",
     "Cycle times measured in quarters",
     "Business and IT optimize different goals",
-]
-wy += Inches(0.3)
-for wtext in weaknesses:
-    bullet(s, PL_X, wy, PL_W, wtext, size=9.5, color=GREY)
-    wy += Inches(0.275)
+], size=9.5, color=GREY, space_after=4)
 
 # right: bidirectional flow
-nodes = ["Business Team", "Embedded Engineer", "AI Builder",
-         "Platform Team", "Reusable Enterprise Capability"]
-BW2, BH2 = Inches(3.1), Inches(0.36)
+nodes = ["Business team", "Embedded engineer", "AI builder",
+         "Platform team", "Reusable enterprise capability"]
+BW2, BH2 = Inches(3.1), Inches(0.35)
 bx = PR_X + (PR_W - BW2) / 2
-by = Inches(1.9)
+by = Inches(2.2)
 for i, node in enumerate(nodes):
     last = i == len(nodes) - 1
     box = add_rect(s, bx, by, BW2, BH2,
-                   fill=LIGHT_BLUE if last else NAVY,
-                   line=BLUE if last else None, line_w=1.0)
-    shape_text(box, node, size=9.5, color=NAVY if last else WHITE,
+                   fill=WHITE if last else BLACK,
+                   line=BLACK if last else None, line_w=1.0)
+    shape_text(box, node, size=9.5, color=BLACK if last else WHITE,
                bold=last)
     if not last:
-        ar = add_rect(s, PR_X + PR_W / 2 - Inches(0.055),
-                      by + BH2 + Inches(0.03),
-                      Inches(0.11), Inches(0.15), fill=BLUE,
-                      shape=MSO_SHAPE.UP_DOWN_ARROW)
-    by += BH2 + Inches(0.21)
+        add_rect(s, PR_X + PR_W / 2 - Inches(0.05),
+                 by + BH2 + Inches(0.03),
+                 Inches(0.1), Inches(0.14), fill=GREY,
+                 shape=MSO_SHAPE.UP_DOWN_ARROW)
+    by += BH2 + Inches(0.2)
 
-wy = Inches(4.95)
-add_text(s, PR_X, wy, PR_W, Inches(0.25), "STRUCTURAL BENEFITS",
-         size=9, color=NAVY, bold=True)
-benefits = [
+wy = Inches(5.0)
+add_text(s, PR_X, wy, PR_W, Inches(0.25), "Structural benefits",
+         size=10, color=BLACK, bold=True)
+bullets(s, PR_X, wy + Inches(0.3), PR_W, [
     "Problems observed first-hand, not translated",
     "Working software in days; feedback continuous",
     "Every deployment compounds into a shared platform",
     "One team accountable for the business outcome",
-]
-wy += Inches(0.3)
-for btext in benefits:
-    bullet(s, PR_X, wy, PR_W, btext, size=9.5, color=INK)
-    wy += Inches(0.275)
+], size=9.5, color=BLACK, space_after=4)
 
-takeaway_box(
-    s, MARGIN, Inches(6.38), CONTENT_W, Inches(0.58),
+takeaway(
+    s, MARGIN, Inches(6.4), CONTENT_W, Inches(0.56),
     "Bottom line:",
     "the traditional model manages requirements across handoffs; the "
     "forward-deployed model removes the handoffs — compressing learning "
     "cycles from quarters to days and converting each win into enterprise "
-    "capability.")
+    "capability.", body_size=9.5)
 
 footer(s, 3)
 
-# ================================================================ SLIDE 4
+# ================================================================ Slide 4
 s = prs.slides.add_slide(BLANK)
 header(
     s,
     "A forward-deployed engineering capability requires changes across "
-    "operating model, governance and talent")
+    "operating model, governance and talent",
+    "Design requirements across five dimensions of the operating model")
 
 cols = [
-    ("Operating Model", [
+    ("Operating model", [
         "Domain-aligned pods",
         "Dedicated embedded engineers",
         "Central platform enablement team",
@@ -530,7 +500,7 @@ cols = [
         "AI risk management",
         "Stage-gates for productization",
     ]),
-    ("Success Metrics", [
+    ("Success metrics", [
         "Time from problem to deployment",
         "Business-user adoption",
         "Productivity and cost impact",
@@ -541,29 +511,25 @@ cols = [
 
 COL_W = Inches(2.29)
 GAP = Inches(0.196)
-TOP = Inches(1.5)
-HEAD_H = Inches(0.4)
-BODY_H = Inches(3.95)
+TOP = Inches(1.92)
 for i, (title, items) in enumerate(cols):
     x = MARGIN + i * (COL_W + GAP)
-    hd = add_rect(s, x, TOP, COL_W, HEAD_H, fill=NAVY)
-    shape_text(hd, title, size=10, color=WHITE, bold=True)
-    add_rect(s, x, TOP + HEAD_H + Inches(0.02), COL_W, BODY_H, fill=CARD)
-    iy = TOP + HEAD_H + Inches(0.22)
+    add_text(s, x, TOP, COL_W, Inches(0.28), title,
+             size=10.5, color=BLACK, bold=True)
+    add_line(s, x, TOP + Inches(0.32), COL_W, color=BLACK, weight=1.0)
+    iy = TOP + Inches(0.48)
     for item in items:
-        add_rect(s, x + Inches(0.14), iy + Inches(0.05),
-                 Inches(0.07), Inches(0.07), fill=BLUE)
-        add_text(s, x + Inches(0.32), iy, COL_W - Inches(0.46), Inches(0.6),
-                 item, size=9, color=INK, line_spacing=1.05)
-        iy += Inches(0.72)
+        add_text(s, x, iy, COL_W, Inches(0.55),
+                 [[("•  ", {}), (item, {})]],
+                 size=9, color=BLACK, line_spacing=1.1)
+        iy += Inches(0.52)
 
-takeaway_box(
+takeaway(
     s, MARGIN, Inches(6.12), CONTENT_W, Inches(0.82),
     "Recommendation:",
     "stand up two to three forward-deployed pods in high-value domains "
     "within 90 days, fund a shared platform team from day one, and scale "
-    "only what demonstrates measured business impact.",
-    body_size=10.5)
+    "only what demonstrates measured business impact.", body_size=10.5)
 
 footer(s, 4)
 
