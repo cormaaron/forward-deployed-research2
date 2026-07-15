@@ -8,6 +8,10 @@ Design rules:
 - Body organized in two halves with sentence-case headers.
 - Plain text bullets/numbered lists; shapes only for diagrams and tables.
 - No all caps, normal spacing.
+
+All statistics and quotes are drawn from public sources verified in
+July 2026 (earnings calls, SEC filings, company blogs and annual letters,
+and reputable press); source tags appear inline and per slide.
 """
 
 import os
@@ -149,8 +153,8 @@ def header(slide, title, subtitle, logo=None):
 def footer(slide, page_no, source=None):
     add_line(slide, MARGIN, Inches(7.12), CONTENT_W, color=HAIRLINE, weight=0.5)
     if source:
-        add_text(slide, MARGIN, Inches(7.2), Inches(10.5), Inches(0.25),
-                 source, size=7.5, color=MID_GREY)
+        add_text(slide, MARGIN, Inches(7.18), Inches(11.3), Inches(0.3),
+                 source, size=7, color=MID_GREY, line_spacing=1.1)
     add_text(slide, Inches(12.28), Inches(7.2), Inches(0.5), Inches(0.25),
              str(page_no), size=8, color=MID_GREY, align=PP_ALIGN.RIGHT)
 
@@ -176,6 +180,18 @@ def takeaway(slide, x, y, w, h, lead, body, body_size=10):
              [[(lead + "  ", {"bold": True}), (body, {})]],
              size=body_size, color=BLACK, anchor=MSO_ANCHOR.MIDDLE,
              line_spacing=1.12)
+    return box
+
+
+def quote_strip(slide, x, y, w, h, quote, attribution):
+    box = add_rect(slide, x, y, w, h, fill=LIGHT)
+    add_rect(slide, x, y, Inches(0.04), h, fill=BLACK)
+    add_text(slide, x + Inches(0.22), y, w - Inches(0.44), h,
+             [[("“" + quote + "”", {})],
+              [("— " + attribution, {"size": 8.5, "color": GREY,
+                                     "bold": True})]],
+             size=10, color=BLACK, anchor=MSO_ANCHOR.MIDDLE,
+             line_spacing=1.15, space_after=4)
     return box
 
 
@@ -254,26 +270,39 @@ section_head(s, RX, Inches(1.84), RW, "Evidence from leading organizations")
 
 rows = [
     ("Palantir",
-     "Originator of the FDE model; engineers deploy on-site to build on Foundry and AIP",
-     "Credits FDE-led AIP bootcamps for accelerating US commercial growth on earnings calls"),
+     "Originator of the FDE model; 'Delta' engineers and 'Echo' strategists "
+     "deploy on-site on Foundry and AIP",
+     "US commercial revenue growth accelerated from +64% to +133% YoY over "
+     "five quarters; 134% net retention"),
     ("Uber",
-     "Engineers embedded with city operations teams; model now offered externally via Uber AI Solutions",
-     "Embedded ops–engineering pairing publicly cited as central to city-by-city scaling"),
+     "City teams with local P&L scaled via a central launch playbook; "
+     "'Agentic Pods' now embed AI engineers",
+     "~400 markets launched; Uber AI Solutions unit now in 30 countries "
+     "with 50+ enterprise customers"),
     ("OpenAI",
-     "FDE teams embed with enterprise customers to build agentic deployments",
-     "Positions FDEs as core to converting frontier models into enterprise adoption"),
+     "FDE function (since Jan 2025) embeds with enterprises to take "
+     "frontier models to production",
+     "Enterprise >40% of revenue; 9M business users; $4B deployment "
+     "venture launched May 2026"),
     ("ElevenLabs",
-     "FDEs co-build production voice agents with customer engineering teams",
-     "Attributes enterprise expansion to its deployment-led engineering model"),
+     "FDEs co-build production voice agents inside customer infrastructure",
+     "$0 to $500M ARR in ~3.5 years; enterprise agent deployments live "
+     "in 4–8 weeks"),
     ("Stripe",
-     "Engineers work directly with users; solution engineers embedded in key accounts",
-     "User-proximate engineering credited for product velocity and enterprise wins"),
+     "'Users first' engineering culture; solutions architects embedded "
+     "in enterprise accounts",
+     "$1.9T volume in 2025 (+34% YoY); 90% of Dow Jones constituents "
+     "run on Stripe"),
     ("Brex",
-     "AI engineers embedded in internal teams to redesign core workflows",
-     "Leadership reports company-wide daily AI usage from the embedded rollout"),
+     "'Forward Deployed Agent Builders' embed with internal teams to "
+     "automate core workflows",
+     "Onboarding auto-approval 0→40% in weeks; manual identity reviews "
+     "down 70%; responses 90% faster"),
     ("Plaid",
-     "FDEs work alongside customer engineers during onboarding and expansion",
-     "Publicly cites materially faster enterprise integrations"),
+     "Embedded customer engineering: solutions engineers and technical "
+     "account managers own integrations",
+     ">$500M ARR in 2025 (~40% YoY), profitable; 1,000+ enterprise "
+     "customers; >1M new connections daily"),
 ]
 
 tbl_y = Inches(2.28)
@@ -303,7 +332,8 @@ takeaway(
     "and relies on a platform team to convert local wins into reusable "
     "enterprise assets.", body_size=9.5)
 
-footer(s, 1, "Source: Company earnings calls, engineering blogs and public statements. Outcomes as publicly reported; not independently verified.")
+footer(s, 1, "Source: company SEC filings, earnings calls, annual letters, blogs and "
+             "press reporting, 2014–2026; company-by-company detail and citations in backup")
 
 # ================================================================ Slide 2
 s = prs.slides.add_slide(BLANK)
@@ -336,33 +366,33 @@ section_head(s, RX, Inches(1.84), Inches(7.3), "How each organization applies it
 
 companies = [
     ("Palantir",
-     "On-site FDEs building on Foundry and AIP",
-     "Two-role split — domain specialists and product engineers",
+     "On-site 'Deltas' build; 'Echoes' own the domain",
+     "AIP bootcamps as the primary sales motion",
      "Land and expand enterprise accounts"),
     ("Uber",
-     "Engineers inside city operations teams",
-     "Ops data loop tuned market by market",
-     "Speed of launch and scale per city"),
+     "City GMs with P&L; central launch playbook",
+     "Playbook refined across ~400 market launches",
+     "Market entry speed; now sold externally"),
     ("OpenAI",
-     "FDE pods within enterprise accounts",
-     "Proximity to frontier research",
+     "FDE pods in enterprise accounts since 2025",
+     "Frontier research proximity; $4B deployment arm",
      "Production agent deployments"),
     ("ElevenLabs",
-     "FDEs co-build with client engineers",
-     "Deep voice and audio specialization",
-     "Fastest path to live voice agents"),
+     "FDEs co-build in customer infrastructure",
+     "Voice specialization; live in 4–8 weeks",
+     "Fastest path to production voice agents"),
     ("Stripe",
-     "Engineers paired directly with users",
-     "Developer empathy and API craft",
+     "Engineers work backwards from users",
+     "Customers inside the exec cadence; friction logs",
      "Product velocity from user contact"),
     ("Brex",
-     "AI engineers embedded in internal teams",
-     "Internal-first automation of own workflows",
-     "Company-wide productivity gains"),
+     "Forward-deployed agent builders in internal teams",
+     "Adoption tied to reviews, hiring and bonuses",
+     "AI-native operations"),
     ("Plaid",
-     "FDEs inside customer integration teams",
-     "Deep bank and fintech data expertise",
-     "Faster, stickier integrations"),
+     "Solutions engineers embedded in integrations",
+     "Product pods co-develop with customers",
+     "Faster, stickier network growth"),
 ]
 
 CW = Inches(3.63)
@@ -391,7 +421,8 @@ takeaway(s, x, y + Inches(0.06), CW, CH - Inches(0.12),
          "proximity to operations, speed of iteration and platform "
          "leverage — applied to different industries.", body_size=8.5)
 
-footer(s, 2, "Source: Company engineering blogs, job postings and public statements")
+footer(s, 2, "Source: company engineering blogs, careers pages and public statements; "
+             "detail and citations in backup")
 
 # ================================================================ Slide 3
 s = prs.slides.add_slide(BLANK)
@@ -547,7 +578,8 @@ add_text(s, MARGIN, Inches(3.15), CONTENT_W, Inches(0.5),
          "Backup", size=24, color=BLACK, bold=True)
 add_line(s, MARGIN, Inches(3.72), Inches(2.2), color=BLACK, weight=1.5)
 add_text(s, MARGIN, Inches(3.88), CONTENT_W, Inches(0.35),
-         "One-pager per exemplar: model, motivation, differentiation and impact",
+         "One-pager per exemplar: model, motivation, differentiation and "
+         "impact — with published data, quotes and citations",
          size=12, color=GREY)
 footer(s, 5)
 
@@ -559,137 +591,258 @@ QUESTION_HEADS = (
     "Impact to date",
 )
 
+# Each bullet: (text, source_tag or None). Quotes verbatim from cited venues.
 EXEMPLARS = [
     ("Palantir",
      "Palantir created the forward-deployed model and built its commercial "
      "engine around it",
      [
-         ["FDEs deploy on-site within customer operations",
-          "Two roles: domain-facing specialists and product-focused engineers",
-          "Build directly on Foundry and AIP against live customer data",
-          "Multi-week bootcamps deliver working software before contracts scale"],
-         ["Government and industrial clients could not specify requirements upfront",
-          "Complex, sensitive data environments demanded on-site iteration",
-          "Conventional software sales failed to demonstrate value in these settings"],
-         ["FDE is the core commercial motion, not a services add-on",
-          "Field learnings flow directly into the product roadmap",
-          "Engineers ship product code — not consulting deliverables"],
-         ["Credits FDE-led AIP bootcamps for accelerating US commercial growth "
-          "on earnings calls",
-          "Sustained expansion within existing accounts publicly highlighted",
-          "Model now widely emulated across the industry"],
+         [("'Delta' engineers write production code on site; 'Echo' "
+           "strategists own the domain problem", "Palantir blog"),
+          ("Product teams build the platforms; Deltas deploy them at the "
+           "customer — field work feeds the roadmap", "Palantir blog"),
+          ("AIP bootcamps: 1–5-day builds on the customer's own data, "
+           "launched Sept 2023", "Palantir blog")],
+         [("Government and industrial clients could not specify "
+           "requirements upfront; FDE role created ~2006 by Shyam Sankar, "
+           "employee #13, now CTO", None),
+          ("Months-long pilots failed to prove value; bootcamps compress "
+           "“what used to take three months” into days",
+           "Q1 2024 earnings call")],
+         [("Bootcamps are the primary go-to-market, not a services "
+           "add-on: 560+ run across 465 organizations in the first four "
+           "months", "Q4 2023 earnings call"),
+          ("Described by Bloomberg as Palantir's “AI sales secret "
+           "weapon”; cited 21 times on one earnings call",
+           "Bloomberg, Apr 2024"),
+          ("Model now copied by OpenAI, Anthropic and defense tech",
+           "Forbes, Jul 2026")],
+         [("US commercial revenue growth accelerated from +64% to +133% "
+           "YoY across five quarters", "SEC filings, Q4 2024–Q1 2026"),
+          ("Seven-figure deals signed 5 and 16 days after bootcamps",
+           "2024 earnings calls"),
+          ("Net dollar retention 134%; $2.8B total contract value closed "
+           "in a single quarter", "Q3 2025 earnings")],
      ],
-     "Source: Palantir earnings calls, S-1 and public statements"),
+     ("In October, we set a goal of executing 500 AIP bootcamps within one "
+      "year. We have already blown that goal out of the water, having "
+      "completed more than 560 bootcamps across 465 organizations to-date.",
+      "Ryan Taylor, Chief Revenue Officer, Q4 2023 earnings call, Feb 2024"),
+     "Sources: Palantir SEC 8-K filings and earnings-call transcripts, Q4 2023–Q1 2026; "
+     "Palantir blog ('Dev versus Delta'; AIP bootcamps); Bloomberg (Apr 23, 2024); Forbes (Jul 10, 2026)"),
 
     ("Uber",
-     "Uber's embedded ops–engineering pairing powered city-by-city scaling "
-     "and is now a product it sells",
+     "Uber scaled city by city on embedded operating teams — and now sells "
+     "the deployment model it built",
      [
-         ["Engineers embedded with city operations teams through the scaling era",
-          "City teams owned the P&L; engineers tuned marketplace levers locally",
-          "Model now offered externally to enterprises via Uber AI Solutions"],
-         ["Every city market behaved differently; central roadmaps were too slow",
-          "Launch speed was existential in winner-take-most markets",
-          "Operational data lived in the field, not at headquarters"],
-         ["Ops-led and engineer-supported — the business owned the outcome",
-          "City learnings codified into playbooks and reused globally",
-          "Matured from internal practice into an external commercial offering"],
-         ["Embedded pairing publicly cited as central to rapid multi-market "
-          "expansion",
-          "Enabled local marketplace tuning at global scale",
-          "Basis for the Uber AI Solutions business line"],
+         [("City teams ran with local P&L: a general manager — “the "
+           "CEO of the city” — plus operations and marketing leads",
+           "Fortune, 2015"),
+          ("A central launcher team parachuted in with a continuously "
+           "updated playbook, then handed off", "Bloomberg, 2014"),
+          ("2026: 'Agentic Pods' embed Uber's most AI-proficient engineers "
+           "in finance, legal and HR", "Pragmatic Engineer, 2026")],
+         [("Every market behaved differently; central roadmaps were too "
+           "slow for winner-take-most competition", None),
+          ("Launch speed was existential — a new city opened every other "
+           "day at the late-2014 peak", "Bloomberg, Nov 2014")],
+         [("Ops-led with local P&L ownership; playbook codified learnings "
+           "across ~400 market launches", "Fortune, 2015"),
+          ("The capability became a product: Uber AI Solutions sells data, "
+           "evaluation and deployment services externally",
+           "Uber, Jun 2025")],
+         [("66 to 266 cities in 2014 alone; 10,000+ cities today",
+           "Forbes, 2014; Uber Newsroom"),
+          ("Uber AI Solutions reached 30 countries and 50+ corporate "
+           "customers by mid-2025", "Uber IR; Forbes, Jun 2025"),
+          ("16 internal AI pods completed in the program's first two "
+           "months", "2026")],
      ],
-     "Source: Uber public statements, engineering blog and press coverage"),
+     ("We're bringing together Uber's platform, people, and AI systems to "
+      "help other organizations build smarter AI more quickly.",
+      "Megha Yethadka, GM, Uber AI Solutions, press release, Jun 2025"),
+     "Sources: Uber IR press release (Jun 20, 2025); Forbes (Dec 2014; Jun 2025); Bloomberg "
+     "Businessweek (Nov 2014); Fortune (Sept 2015); Uber Newsroom; Pragmatic Engineer (2026)"),
 
     ("OpenAI",
      "OpenAI built a forward-deployed function to turn frontier models into "
      "deployed enterprise systems",
      [
-         ["FDE pods embed within enterprise customer accounts",
-          "Build production agent and workflow deployments on OpenAI models",
-          "Scope spans integration, evaluation and adoption support"],
-         ["Model capability outpaced enterprise ability to absorb it",
-          "API access alone did not convert into production use cases",
-          "Competition for enterprise adoption intensified"],
-         ["Proximity to frontier research within customer engagements",
-          "Field signal shapes model and product priorities",
-          "Deployment patterns feed reusable product features"],
-         ["Positions FDEs as core to enterprise adoption",
-          "Enterprise agent deployments built with embedded teams publicly "
-          "showcased"],
+         [("FDE function created Jan 2025 under Colin Jarvis; pods own "
+           "discovery through production, with ~50% travel",
+           "OpenAI careers"),
+          ("Engagements priced from $10M; clients include Morgan Stanley, "
+           "T-Mobile and the US Department of Defense",
+           "The Information, Jul 2025"),
+          ("May 2026: model spun into the OpenAI Deployment Company with "
+           "$4B committed and ~150 FDEs via the Tomoro acquisition",
+           "OpenAI, May 2026")],
+         [("Model capability outpaced enterprises' ability to absorb it; "
+           "API access alone did not convert to production", None),
+          ("Playbook imported deliberately — many early FDE hires came "
+           "from Palantir", "The Information, Jul 2025")],
+         [("Frontier research proximity inside customer accounts", None),
+          ("Scaled beyond internal hiring: a majority-owned deployment "
+           "venture plus alliances with McKinsey, BCG, Accenture and "
+           "Capgemini", "OpenAI, May 2026")],
+         [("Enterprise is now >40% of revenue, tracking to parity with "
+           "consumer by end-2026", "OpenAI, 2026"),
+          ("9M paying business users in Feb 2026, up from 3M in Jun 2025",
+           "OpenAI; CNBC"),
+          ("Go-to-market organization grew from ~50 to 700+ people in 18 "
+           "months", "CNBC, Aug 2025")],
      ],
-     "Source: OpenAI public statements, hiring posts and press coverage"),
+     ("I see our responsibility as both building the tools and being, in "
+      "some ways, the most knowledgeable people in the world on how to "
+      "deploy them.",
+      "Brad Lightcap, COO, OpenAI, CNBC, Aug 2025"),
+     "Sources: OpenAI announcements and careers pages (2025–26); CNBC (Jun 2025; Aug 2025; "
+     "May 2026); The Information via The Decoder and Business Standard (Jul 2025)"),
 
     ("ElevenLabs",
-     "ElevenLabs uses forward-deployed engineers to compress time-to-production "
-     "for enterprise voice agents",
+     "ElevenLabs uses forward-deployed engineers to compress "
+     "time-to-production for enterprise voice agents",
      [
-         ["FDEs co-build production voice agents with customer engineering teams",
-          "Engagements run end-to-end: design, integration, evaluation, launch"],
-         ["Voice agents demand domain-specific tuning customers could not do alone",
-          "Enterprise buyers required proof in production, not demonstrations"],
-         ["Deep voice and audio specialization applied inside customer stacks",
-          "Embedded talent lets a small company deliver enterprise-grade "
-          "deployments"],
-         ["Attributes enterprise expansion to its deployment-led model",
-          "FDE hiring scaled publicly alongside enterprise growth"],
+         [("FDEs work “shoulder-to-shoulder with customers, from "
+           "pre-sales evaluation through post-sales implementation”, "
+           "building inside customer infrastructure",
+           "ElevenLabs careers"),
+          ("Engagements go from scoping to live deployment in 4–8 weeks",
+           "ElevenLabs"),
+          ("Multi-track FDE organization — engineers, strategists and "
+           "graduates — hiring across three continents",
+           "ElevenLabs careers")],
+         [("CEO Mati Staniszewski is an ex-Palantir deployment "
+           "strategist; the model was imported deliberately",
+           "Sifted, Mar 2025"),
+          ("Enterprise buyers demanded production voice agents, not "
+           "demos; four ex-Palantir FDEs hired through 2024",
+           "Sifted, Mar 2025")],
+         [("Deep voice specialization with compliance built in: SOC 2, "
+           "GDPR, HIPAA, zero-retention options", "ElevenLabs"),
+          ("FDEs “have helped hundreds of enterprises launch AI "
+           "agents”", "ElevenLabs")],
+         [("ARR: $100M in 20 months, $200M in 10, $330M in 5; $500M by "
+           "May 2026", "TechCrunch, Jan 2026; ElevenLabs"),
+          ("$500M Series D at an $11B valuation, Feb 2026 (Sequoia-led)",
+           "TechCrunch, Feb 2026"),
+          ("Revolut: agents serve 4M+ customers in 30+ languages; ticket "
+           "resolution cut by more than 8x", "ElevenLabs, Jan 2026")],
      ],
-     "Source: ElevenLabs public statements, job postings and press coverage"),
+     ("It took us 20 months to reach $100 million in ARR, 10 months to "
+      "reach $200 million, and five months to reach the current number.",
+      "Mati Staniszewski, co-founder and CEO, Bloomberg interview, Jan 2026"),
+     "Sources: ElevenLabs blog and careers pages (2025–26); TechCrunch (Jan 30, 2025; Jan 13 "
+     "and Feb 4, 2026); CNBC (Feb and May 2026); Sifted (Mar 2025)"),
 
     ("Stripe",
-     "Stripe's user-proximate engineering culture is a long-standing form of "
-     "forward deployment",
+     "Stripe institutionalized user-proximate engineering a decade before "
+     "it had a name",
      [
-         ["Engineers work directly with users — a founding practice",
-          "Solution engineers embedded in key enterprise accounts",
-          "Direct user contact expected of product engineers"],
-         ["A developer-first product required first-hand user understanding",
-          "Enterprise payments complexity could not be specified remotely"],
-         ["Cultural rather than organizational — proximity is the default",
-          "API design shaped by continuous developer feedback"],
-         ["User-proximate engineering credited for product velocity and "
-          "enterprise wins",
-          "Developer experience widely treated as the industry benchmark"],
+         [("“Users first” is a codified operating principle: "
+           "work backwards from user needs", "stripe.com"),
+          ("A customer joins the first 30 minutes of the executive team "
+           "meeting every other week, before ~40 leaders",
+           "P. Collison, Apr 2025"),
+          ("Friction logging: engineers and leaders walk product flows as "
+           "users and log every snag", "Stripe DevRel"),
+          ("Solutions architects and professional services embedded in "
+           "enterprise accounts", "stripe.com")],
+         [("A developer-first product required first-hand user "
+           "understanding", None),
+          ("Stripe ran for years without product managers — engineers own "
+           "scoping and user contact", "Pragmatic Engineer, 2023")],
+         [("Cultural rather than organizational: proximity is expected of "
+           "every engineer and screened in interviews", None),
+          ("Onboarding puts every hire in front of users: build an "
+           "integration, answer real support tickets", None)],
+         [("$1.9T processed in 2025, +34% YoY — roughly 1.6% of global "
+           "GDP", "2025 annual letter"),
+          ("90% of Dow Jones constituents and 80% of the Nasdaq 100 run "
+           "on Stripe", "2025 annual letter"),
+          ("Businesses on Stripe grew ~7x faster than S&P 500 revenue in "
+           "aggregate", "2024 annual letter")],
      ],
-     "Source: Stripe public statements, founder interviews and press coverage"),
+     ("Every other week, we have a customer join for the first 30 minutes "
+      "of our management team meeting: they share their candid feedback, "
+      "and ~40 leaders from across Stripe listen.",
+      "Patrick Collison, co-founder and CEO, Apr 2025"),
+     "Sources: Stripe annual letters (Feb 2025; Feb 2026); Stripe operating principles "
+     "(stripe.com/jobs/culture); TechCrunch (Apr 2025); The Pragmatic Engineer (Dec 2023)"),
 
     ("Brex",
      "Brex points its forward-deployed engineers inward, rebuilding its own "
      "operations around AI",
      [
-         ["AI engineers embedded within internal business teams",
-          "Core workflows redesigned around AI-native tooling",
-          "Adoption managed as an explicit leadership mandate"],
-         ["Fintech margin pressure demanded step-change productivity",
-          "Leadership prioritized internal AI adoption ahead of external "
-          "products"],
-         ["Internal-first: its own operations serve as the proving ground",
-          "Embedded engineers accountable for adoption, not just delivery"],
-         ["Leadership reports company-wide daily AI usage",
-          "Workflow redesign publicly discussed as a productivity driver"],
+         [("A formal role: 'Forward Deployed Agent Builder' engineers "
+           "“embed with partner teams”, shadow the work, then "
+           "ship agents that take over workflows", "Brex careers"),
+          ("Three-pillar strategy: corporate AI, operational AI (owned by "
+           "the COO) and product AI", "Latent.Space, Feb 2026"),
+          ("~1,000 approved AI tools; each engineer holds a $50/month "
+           "self-serve budget", "TechCrunch, Jul 2025")],
+         [("The founding question: “If we were starting Brex today, "
+           "how would we build?”", "Brex Journal, Aug 2025"),
+          ("Fintech margin pressure demanded step-change productivity; "
+           "BPO strategy shifted to agents", None)],
+         [("Adoption is engineered, not assumed: four AI-fluency levels "
+           "feed performance reviews; coding interviews require AI",
+           "Semafor, Sept 2025"),
+          ("225+ spot bonuses paid for employee AI projects",
+           "Dec 2025")],
+         [("Onboarding rebuilt around agents: auto-approval from 0% to "
+           "40% in weeks; manual identity reviews down 70%",
+           "Brex Journal, Jan 2026"),
+          ("Customer responses 90% faster; ~15,000 customer hours saved "
+           "per year", "First Round, 2025"),
+          ("Onboarding time cut from days to minutes",
+           "Brex Journal, Jan 2026")],
      ],
-     "Source: Brex leadership statements and press coverage"),
+     ("I knew we needed to be AI-native on all our manual tasks, which "
+      "meant shifting our BPO strategy, which meant agents doing the work, "
+      "which meant managers overseeing agents and people.",
+      "Camilla Matias, COO, Brex, First Round Review, 2025"),
+     "Sources: Brex Journal (Aug 2025; Jan 2026); Brex careers ('Forward Deployed Agent "
+     "Builder'); TechCrunch (Jul 2025); First Round Review (2025); Semafor (Sept 2025); Latent.Space (Feb 2026)"),
 
     ("Plaid",
-     "Plaid deploys engineers into customer integration teams to make "
-     "integrations faster and stickier",
+     "Plaid runs forward deployment in all but name: embedded engineers "
+     "drive integration and expansion",
      [
-         ["FDEs work alongside customer engineers during onboarding and "
-          "expansion",
-          "Hands-on integration work against customer systems"],
-         ["Integration timelines gated revenue for Plaid and its customers",
-          "Bank and fintech data complexity exceeded documentation-led support"],
-         ["Deep bank and fintech data expertise applied in customer codebases",
-          "Embedded position surfaces product gaps early"],
-         ["Publicly cites materially faster enterprise integrations",
-          "Deeper, harder-to-displace customer relationships"],
+         [("A 'Customer Engineering & Solutions' organization: solutions "
+           "engineers design and implement customer integrations",
+           "Plaid careers"),
+          ("Technical account managers own post-sales technical strategy "
+           "and track integration health and adoption", "Plaid careers"),
+          ("Product engineers work in pods that iterate with selected "
+           "customers before building anything",
+           "Plaid blog, 2022")],
+         [("Bank-data integrations gate customer revenue; complexity "
+           "exceeded documentation-led support", None),
+          ("Expansion is driven by embedded technical staff, not by "
+           "sales alone", "Plaid careers")],
+         [("Forward-deployed outcomes without the title — the embedded "
+           "roles sit in solutions engineering", None),
+          ("Developer experience as strategy: “a few lines of "
+           "code” to reach thousands of institutions", "Plaid docs")],
+         [(">$500M ARR in 2025, ~40% YoY, profitable",
+           "2025 shareholder letter"),
+          ("1,000+ enterprise customers of ~8,000 total by mid-2024",
+           "TechCrunch, Jun 2024"),
+          (">1M new data connections daily; 12,000+ institutions; 1 in 2 "
+           "US adults have connected via Plaid", "Plaid, 2026")],
      ],
-     "Source: Plaid public statements, job postings and press coverage"),
+     ("We're trying to identify the lowest level engineer, [and] build a "
+      "fantastic experience for them… Someone's able to quickly build "
+      "something in our sandbox.",
+      "Zach Perret, co-founder and CEO, 2020 interview (via Contrary Research)"),
+     "Sources: Plaid 2025 shareholder letter (Jan 2026); Plaid careers and blog; TechCrunch "
+     "(Jun 2024; Apr 2025); Bloomberg (Jan 2025); Contrary Research"),
 ]
 
 BK_COL_W = Inches(2.87)
 BK_GAP = Inches(0.25)
-for page, (name, narrative, columns, source) in enumerate(EXEMPLARS, start=6):
+for page, (name, narrative, columns, quote, sources) in enumerate(EXEMPLARS, start=6):
     s = prs.slides.add_slide(BLANK)
     logo = os.path.join("assets", "logos", name.lower() + ".png")
     header(s, narrative,
@@ -700,10 +853,18 @@ for page, (name, narrative, columns, source) in enumerate(EXEMPLARS, start=6):
         add_text(s, x, Inches(1.92), BK_COL_W, Inches(0.28), head,
                  size=10.5, color=BLACK, bold=True)
         add_line(s, x, Inches(2.24), BK_COL_W, color=BLACK, weight=1.0)
-        paras = [[("•  ", {}), (t, {})] for t in items]
-        add_text(s, x, Inches(2.44), BK_COL_W, Inches(4.4), paras,
-                 size=10.5, color=BLACK, line_spacing=1.2, space_after=16)
-    footer(s, page, source)
+        paras = []
+        for text, src in items:
+            runs = [("•  ", {}), (text, {})]
+            if src:
+                runs.append(("  (" + src + ")",
+                             {"color": MID_GREY, "size": 7}))
+            paras.append(runs)
+        add_text(s, x, Inches(2.4), BK_COL_W, Inches(3.1), paras,
+                 size=9, color=BLACK, line_spacing=1.15, space_after=9)
+    quote_strip(s, MARGIN, Inches(5.72), CONTENT_W, Inches(1.08),
+                quote[0], quote[1])
+    footer(s, page, sources)
 
 OUT = "Forward-Deployed-Engineering_Executive-Deck.pptx"
 prs.save(OUT)
