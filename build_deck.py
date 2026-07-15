@@ -10,6 +10,8 @@ Design rules:
 - No all caps, normal spacing.
 """
 
+import os
+
 from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
@@ -127,11 +129,17 @@ def add_line(slide, x, y, w, color=HAIRLINE, weight=0.75):
     return ln
 
 
-def header(slide, title, subtitle):
+def header(slide, title, subtitle, logo=None):
     """Narrative title (18pt bold), black rule, objective subtitle
-    (16pt bold). Returns the y where body content may start."""
-    add_text(slide, MARGIN, Inches(0.32), CONTENT_W, Inches(0.75),
+    (16pt bold). Optional logo PNG at top right. Returns the y where
+    body content may start."""
+    title_w = CONTENT_W - Inches(0.85) if logo else CONTENT_W
+    add_text(slide, MARGIN, Inches(0.32), title_w, Inches(0.75),
              title, size=18, color=BLACK, bold=True, line_spacing=1.05)
+    if logo:
+        size = Inches(0.5)
+        slide.shapes.add_picture(logo, PAGE_W - MARGIN - size, Inches(0.3),
+                                 height=size, width=size)
     add_line(slide, MARGIN, Inches(0.98), CONTENT_W, color=BLACK, weight=1.5)
     add_text(slide, MARGIN, Inches(1.1), CONTENT_W, Inches(0.35),
              subtitle, size=16, color=BLACK, bold=True, line_spacing=1.05)
@@ -683,8 +691,10 @@ BK_COL_W = Inches(2.87)
 BK_GAP = Inches(0.25)
 for page, (name, narrative, columns, source) in enumerate(EXEMPLARS, start=6):
     s = prs.slides.add_slide(BLANK)
+    logo = os.path.join("assets", "logos", name.lower() + ".png")
     header(s, narrative,
-           "Backup: " + name + " — model, motivation, differentiation and impact")
+           "Backup: " + name + " — model, motivation, differentiation and impact",
+           logo=logo if os.path.exists(logo) else None)
     for i, (head, items) in enumerate(zip(QUESTION_HEADS, columns)):
         x = MARGIN + i * (BK_COL_W + BK_GAP)
         add_text(s, x, Inches(1.92), BK_COL_W, Inches(0.28), head,
